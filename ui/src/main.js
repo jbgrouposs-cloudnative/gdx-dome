@@ -4,7 +4,7 @@ import VueRouter from 'vue-router';
 import App from './App.vue';
 import ProviderListPage from './components/ProviderListPage.vue';
 import ProviderPage from './components/ProviderPage.vue';
-import ProviderRegisterPage from './components/ProviderRegisterPage.vue';
+import ProviderEditPage from './components/ProviderEditPage.vue';
 
 import 'vuetify/dist/vuetify.min.css';
 
@@ -17,13 +17,14 @@ Vue.use(VueRouter);
 
 const router = new VueRouter({
   routes: [
-    { path: '/', component: ProviderListPage },
+    { path: '/summary', component: ProviderListPage },
     {
       path: '/details/:id',
       component: ProviderPage,
       props: true
     },
-    { path: '/register', component: ProviderRegisterPage }
+    { path: '/edit/:id', component: ProviderEditPage },
+    { path: '/*', redirect: '/summary' }
   ]
 });
 

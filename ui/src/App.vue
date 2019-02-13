@@ -1,10 +1,21 @@
 <template>
   <div id="app">
-    <v-app>
+    <v-app dark>
       <v-content>
-        <v-toolbar>
+        <!--
+        <v-toolbar color="primary">
+          <v-toolbar-side-icon @click="onAppBarIconClicked()">
+            <v-icon>{{hasParentPage ? 'arrow_back' : 'menu'}}</v-icon>
+          </v-toolbar-side-icon>
           <v-toolbar-title>{{title}}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items class="hidden-sm-and-down">
+          <v-btn icon>
+            <v-icon>account_circle</v-icon>
+          </v-btn>
+          </v-toolbar-items>
         </v-toolbar>
+        -->
         <v-container>
           <router-view></router-view>
         </v-container>
@@ -20,8 +31,17 @@ export default {
   name: "app",
   computed: {
     ...mapGetters({
-      title: "title"
+      title: "title",
+      hasParentPage: "hasParentPage"
     })
+  },
+  methods: {
+    onAppBarIconClicked() {
+      if (this.hasParentPage) {
+        this.$router.go(-1);
+        return;
+      }
+    }
   }
 };
 </script>
@@ -31,7 +51,5 @@ export default {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
 }
 </style>

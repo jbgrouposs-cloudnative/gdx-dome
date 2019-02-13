@@ -1,5 +1,15 @@
 <template>
   <div>
+    <v-toolbar app color="primary">
+      <v-toolbar-side-icon></v-toolbar-side-icon>
+      <v-toolbar-title>プロバイダ一覧</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items class="hidden-xs-and-down">
+        <v-btn icon>
+          <v-icon>account_circle</v-icon>
+        </v-btn>
+      </v-toolbar-items>
+    </v-toolbar>
     <v-card
       v-for="provider in providerList"
       :key="provider.provider"
@@ -15,6 +25,11 @@
       </v-card-actions>
     </v-card>
     <v-snackbar v-model="snackbar">{{message}}</v-snackbar>
+    <v-fab-transition>
+      <v-btn fab fixed right bottom color="accent" @click="openRegisterPage()">
+        <v-icon>add</v-icon>
+      </v-btn>
+    </v-fab-transition>
   </div>
 </template>
 <script>
@@ -48,10 +63,16 @@ export default {
     },
     openDetail(provider) {
       this.$router.push("/details/" + provider);
+    },
+    openRegisterPage() {
+      this.$router.push("/edit/new");
     }
   },
   created() {
-    this.$store.dispatch("setTitle", "プロバイダ一覧");
+    this.$store.dispatch("setAppBarState", {
+      title: "プロバイダ一覧",
+      hasParentPage: false
+    });
   },
   mounted() {
     this.checkout();

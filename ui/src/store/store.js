@@ -5,13 +5,16 @@ import * as mutationTypes from './mutation-types';
 Vue.use(Vuex);
 
 const state = {
-  title: '',
+  appBarState: {
+    title: '',
+    hasParentPage: false
+  },
   baseUrl: 'http://localhost:3000'
 };
 
 const actions = {
-  setTitle({ commit }, title) {
-    commit(mutationTypes.SET_TITLE, title);
+  setAppBarState({ commit }, appBarState) {
+    commit(mutationTypes.SET_APPBAR_STATE, appBarState);
   },
   setBaseUrl({ commit }, baseurl) {
     commit(mutationTypes.SET_BASEURL, baseurl);
@@ -19,8 +22,8 @@ const actions = {
 };
 
 const mutations = {
-  [mutationTypes.SET_TITLE](state, title) {
-    state.title = title;
+  [mutationTypes.SET_APPBAR_STATE](state, appBarState) {
+    state.appBarState = appBarState;
   },
   [mutationTypes.SET_BASEURL](state, baseurl) {
     state.baseUrl = baseurl;
@@ -28,7 +31,8 @@ const mutations = {
 };
 
 const getters = {
-  title: state => state.title,
+  title: state => state.appBarState.title,
+  hasParentPage: state => state.appBarState.hasParentPage,
   baseUrl: state => state.baseUrl
 };
 
