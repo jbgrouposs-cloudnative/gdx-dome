@@ -1,5 +1,16 @@
 const AWS = require('aws-sdk');
-AWS.config.update({ region: 'us-west-2' });
+AWS.config.update({ region: process.env.AWS_DEFAULT_REGION });
+const proxyHost = process.env.NODE_PROXY_HOST;
+const proxyPort = process.env.NODE_PROXY_PORT;
+if (proxyHost && proxyPort) {
+  const proxy = require('proxy-agent');
+  const proxyUri = 'http://' + proxyHost + ':' + proxyPort;
+  AWS.config.update({
+    httpOptions: { agent: proxy(proxyUri) }
+  });
+  console.log('setup proxy=' + proxyUri);
+}
+
 const documentClient = new AWS.DynamoDB.DocumentClient();
 
 async function getServiceList() {
@@ -9,7 +20,7 @@ async function getServiceList() {
   return result;
 }
 
-async function getService(providerId) {
+async function getService(providerId, objectType) {
   console.log('providerId = ' + providerId);
   const value = await documentClient
     .get(
@@ -17,7 +28,7 @@ async function getService(providerId) {
         TableName: 'GDXDomeDynamoDB',
         Key: {
           provider: providerId,
-          object: 'ENDPOINT'
+          object: objectType
         }
       },
       (err, data) => {

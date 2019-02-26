@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 const store = require('./store');
 
 const app = express();
 app.use(cors());
+app.use(bodyParser.json());
 
 const port = process.env.NODE_EXPOSE_PORT || 50050;
 
@@ -14,7 +16,16 @@ app.get('/services', (req, res) => {
     console.log('/services');
     store.getServiceList().then(
       value => {
-        res.json(value);
+        const services =
+          value.Items && value.Items.length > 0
+            ? value.Items.map(item => {
+                return {
+                  providerId: item.provider,
+                  objectType: item.object
+                };
+              })
+            : [];
+        res.json(services);
       },
       reason => {
         res.json(reason);
@@ -28,8 +39,9 @@ app.get('/services', (req, res) => {
 app.get('/services/:provider_id', (req, res) => {
   (async () => {
     const id = req.params.provider_id;
+    const objectType = 'ENDPOINT';
     console.log(id);
-    store.getService(id).then(
+    store.getService(id, objectType).then(
       value => {
         res.json(value);
       },
