@@ -9,7 +9,10 @@ const state = {
     title: '',
     hasParentPage: false
   },
-  baseUrl: 'http://localhost:3000'
+  baseUrl: 'http://localhost:3000',
+  user: {
+    userId: 'wahhoier'
+  }
 };
 
 const actions = {
@@ -18,6 +21,9 @@ const actions = {
   },
   setBaseUrl({ commit }, baseurl) {
     commit(mutationTypes.SET_BASEURL, baseurl);
+  },
+  setUser({ commit }, user) {
+    commit(mutationTypes.SET_USER, user);
   }
 };
 
@@ -27,13 +33,19 @@ const mutations = {
   },
   [mutationTypes.SET_BASEURL](state, baseurl) {
     state.baseUrl = baseurl;
+  },
+  [mutationTypes.SET_USER](state, user) {
+    state.user = {
+      ...user
+    };
   }
 };
 
 const getters = {
   title: state => state.appBarState.title,
   hasParentPage: state => state.appBarState.hasParentPage,
-  baseUrl: state => state.baseUrl
+  baseUrl: state => state.baseUrl,
+  user: state => state.user
 };
 
 export default new Vuex.Store({

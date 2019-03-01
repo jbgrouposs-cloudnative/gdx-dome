@@ -9,21 +9,32 @@
 
     <v-progress-linear :indeterminate="true" v-if="isLoading"></v-progress-linear>
 
-    <v-layout row align-center justify-center>
-      <v-flex xs12 sm8 md6>
+    <v-layout row align-center justify-center v-if="!isLoading">
+      <v-flex xs12 sm8>
         <v-form ref="form" v-model="valid" lazy-validation>
           <h3>メイン</h3>
           <v-divider></v-divider>
-          <v-text-field
-            v-model="currentProvider.name"
-            :counter="20"
-            :rules="nameRules"
-            label="プロバイダ名"
-            outline
-            required
-            maxlength="20"
-          ></v-text-field>
-
+          <v-layout row align-center>
+            <v-text-field
+              v-model="currentProvider.name"
+              :counter="30"
+              :rules="nameRules"
+              label="プロバイダ名"
+              outline
+              required
+              maxlength="30"
+            ></v-text-field>
+          </v-layout>
+          <v-layout row align-center>
+            <v-select
+              :items="versionList"
+              v-model="currentProvider.version"
+              label="API バージョン"
+              outline
+              v-on:change="handleVersionChanged()"
+            ></v-select>
+          </v-layout>
+          <!--
           <v-layout row align-center justify-space-between>
             <v-flex>
               <v-text-field
@@ -41,34 +52,67 @@
               <v-icon color="error">error</v-icon>
             </v-flex>
           </v-layout>
-
-          <h3>構成</h3>
+          -->
+          <h3>コンテナ情報</h3>
           <v-divider></v-divider>
+          <v-layout row>
+            <v-text-field
+              v-model="currentProvider.container_info.name"
+              :counter="30"
+              label="コンテナ名"
+              outline
+              required
+              maxlength="30"
+            ></v-text-field>
+          </v-layout>
+          <v-layout row align-center>
+            <v-select
+              :loading="isImageListLoading"
+              :items="imageList"
+              v-model="currentProvider.container_info.image"
+              label="コンテナイメージ"
+              outline
+            ></v-select>
+          </v-layout>
           <v-layout row align-center justify-space-between>
             <v-flex xs3>
-              <v-text-field v-model="currentProvider.cpu" label="CPU" suffix="コア" outline></v-text-field>
+              <v-text-field v-model="portModel" label="ポート" outline></v-text-field>
             </v-flex>
             <v-flex xs3>
-              <v-text-field v-model="currentProvider.memory" label="メモリ" suffix="MB" outline></v-text-field>
+              <v-text-field
+                v-model="currentProvider.container_info.cpu"
+                label="CPU"
+                outline
+                hint="例：500m"
+              ></v-text-field>
             </v-flex>
             <v-flex xs3>
-              <v-text-field v-model="currentProvider.scale.max" label="最大" suffix="コンテナ" outline></v-text-field>
+              <v-text-field
+                v-model="currentProvider.container_info.memory"
+                label="メモリ"
+                outline
+                hint="例：1Gi"
+              ></v-text-field>
             </v-flex>
           </v-layout>
           <v-layout row align-center justify-space-between></v-layout>
           <h3>アプリケーションの環境変数</h3>
           <v-divider></v-divider>
-          <v-btn icon block @click="currentProvider.environments.push({key: '', value: ''})">
+          <v-btn
+            icon
+            block
+            @click="currentProvider.container_info.environments.push({name: '', value: ''})"
+          >
             <v-icon>add</v-icon>
           </v-btn>
           <v-layout
             row
             align-center
-            v-for="(env, index) in currentProvider.environments"
+            v-for="(env, index) in currentProvider.container_info.environments"
             :key="index"
           >
             <v-flex xs5>
-              <v-text-field v-model="env.key" label="変数名" required :rules="envKeyRules" outline></v-text-field>
+              <v-text-field v-model="env.name" label="変数名" required :rules="envNameRules" outline></v-text-field>
             </v-flex>
             <v-flex>：</v-flex>
             <v-flex xs5>
@@ -108,36 +152,51 @@ export default {
     return {
       isNew: false,
       valid: true,
-      currentId: "",
       nameRules: [
         v => !!v || "入力必須項目です！",
-        v => (v && v.length <= 20) || "20文字以内で入力してください！"
+        v => (v && v.length <= 30) || "30文字以内で入力してください！"
       ],
       urlRules: [v => !!v || "入力必須項目です！"],
-      envKeyRules: [
+      envNameRules: [
         v => !!v || "入力必須項目です！",
-        v => !this.isDuplicatedKey(v) || "キーが重複しています！"
+        v => !this.isDuplicatedName(v) || "名前が重複しています！"
       ],
       envValueRules: [v => !!v || "入力必須項目です！"],
+      portModel: "80",
       currentProvider: {
-        id: "",
-        name: "テストプロバイダ",
-        creatorId: "wawawahhoi",
-        updatorId: "",
-        createdTimestamp: new Date(),
-        updatedTimestamp: null,
+        name: "new-provider",
+        version: 1, // name + '-v' + version = provider
+        creatorId: this.$store.getters.user.userId,
+        // updatorId: "",
+        createdTimestamp: Date.now(),
+        // updatedTimestamp: null,
         tags: ["タグ１"],
-        repositoryUrl: "https://github.com/jbgrouposs-cloudnative/gdx-dome",
-        version: 1,
-        cpu: 2,
-        memory: 2048,
-        scale: {
-          min: 1,
-          max: 200
-        },
-        environments: []
+        container_info: {
+          name: "",
+          namespace: "wahhoi-test" + Date.now(), // TODO: const?
+          image: "",
+          port: 80,
+          cpu: "500m",
+          memory: "1Gi",
+          environments: [
+            {
+              name: "SPRING_DATASOURCE_URL",
+              value: "jdbc:mysql://mysql.wahhoi.svc.cluster.local:3306/wahhoi"
+            },
+            { name: "SPRING_DATASOURCE_USERNAME", value: "" },
+            { name: "SPRING_DATASOURCE_PASSWORD", value: "" },
+            {
+              name: "SPRING_DATASOURCE_DRIVERCLASSNAME",
+              value: "com.mysql.jdbc.Driver"
+            }
+          ]
+        }
+        // repositoryUrl: "https://github.com/jbgrouposs-cloudnative/gdx-dome"
       },
-      isLoading: false,
+      versionList: [1],
+      imageList: [],
+      isLoading: true,
+      isImageListLoading: false,
       isSaving: false,
       snackbar: false,
       snackbarColor: "",
@@ -153,12 +212,13 @@ export default {
           method: "post",
           url: baseurl + "/services",
           data: {
-            provider: "test" + Date.now(),
+            ...this.currentProvider,
+            provider:
+              this.currentProvider.name + "-v" + this.currentProvider.version,
             object: "ENDPOINT",
-            endpoints: [],
             container_info: {
-              name: "test_container",
-              port: 80
+              ...this.currentProvider.container_info,
+              port: Number(this.portModel)
             }
           }
         }).then(
@@ -181,7 +241,10 @@ export default {
         const provider = this.currentProvider;
         axios
           .put(baseurl + "/services/" + provider.id, {
-            Item: this.currentProvider
+            ...this.currentProvider,
+            provider:
+              this.currentProvider.name + "-v" + this.currentProvider.version,
+            object: "ENDPOINT"
           })
           .then(
             () => {
@@ -200,17 +263,74 @@ export default {
           );
       }
     },
-    isDuplicatedKey(key) {
+    isDuplicatedKey(name) {
       let count = 0;
-      this.currentProvider.environments.forEach(env => {
-        if (env.key === key) {
+      this.currentProvider.container_info.environments.forEach(env => {
+        if (env.name === name) {
           count++;
         }
       });
       return count >= 2;
     },
     removeEnvByIndex(index) {
-      this.currentProvider.environments.splice(index, 1);
+      this.currentProvider.container_info.environments.splice(index, 1);
+    },
+    loadProvider(id) {
+      this.isLoading = true;
+      const baseurl = this.$store.getters.baseUrl;
+      const sepalatorIndex = id.lastIndexOf("-");
+      const name = id.substring(0, sepalatorIndex);
+      // this.loadImageList(name); // build image list
+      const version = Number(id.substring(sepalatorIndex, id.length));
+      const list = [1];
+      for (let i = 2; i <= this.currentProvider.version + 1; i++) {
+        list.push(i);
+      }
+      this.versionList = list;
+      axios.get(baseurl + "/services/" + id).then(
+        res => {
+          this.isLoading = false;
+          const item = res.data;
+          this.currentProvider = {
+            ...item,
+            name,
+            version
+          };
+          this.portModel = "" + item.container_info.port;
+        },
+        err => {
+          this.isLoading = false;
+          this.handleError(err, "プロバイダ情報の取得に失敗しました。");
+        }
+      );
+    },
+    loadImageList(name) {
+      this.isImageListLoading = true;
+      const baseurl = this.$store.getters.baseUrl;
+      axios.get(baseurl + "/container-images/" + name).then(
+        res => {
+          this.isImageListLoading = false;
+          this.imageList = res.data;
+        },
+        err => {
+          this.isImageListLoading = false;
+          this.handleError(err, "イメージ情報の取得に失敗しました。");
+        }
+      );
+    },
+    handleVersionChanged() {
+      if (
+        !this.currentProvider ||
+        !this.currentProvider.version ||
+        this.currentProvider.version <= 0
+      ) {
+        return;
+      }
+      window.setTimeout(() => {
+        const providerId =
+          this.currentProvider.name + "-v" + this.currentProvider.version;
+        this.loadProvider(providerId);
+      }, 1000);
     },
     handleError(err, message) {
       this.snackbarColor = "error";
@@ -225,42 +345,14 @@ export default {
       title: "プロバイダ編集",
       hasParentPage: true
     });
+    this.loadImageList("wahhoi-provider"); // TODO これほんま？
     const id = this.$route.params.id;
     this.isNew = id === "new";
-    if (!this.isNew) {
-      this.isLoading = true;
-      const baseurl = this.$store.getters.baseUrl;
-      axios.get(baseurl + "/services/" + id).then(
-        res => {
-          this.isLoading = false;
-          const item = res.item;
-          this.currentProvider = {
-            id: item.provider,
-            name: item.provider,
-            objectType: item.object,
-            containerInfo: item.container_info,
-            endpoints: item.endpoints
-          };
-        },
-        err => {
-          this.isLoading = false;
-          this.handleError(err, "プロバイダ情報の取得に失敗しました。");
-        }
-      );
-    } else {
-      /*
-      this.currentProvider = {
-        id: "" + Date.now(),
-        name: "",
-        objectType: "ENDPOINT",
-        containerInfo: {
-          name: "",
-          port: 80
-        },
-        endpoints: []
-      };
-      */
+    if (this.isNew) {
+      this.isLoading = false;
+      return;
     }
+    this.loadProvider(id);
   }
 };
 </script>

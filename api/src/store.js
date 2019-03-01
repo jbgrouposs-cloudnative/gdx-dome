@@ -13,10 +13,14 @@ if (proxyHost && proxyPort) {
 
 const documentClient = new AWS.DynamoDB.DocumentClient();
 
+let tableName = 'GDXDomeDynamoDB'; // default table name.
+
+function setTargetTable(newTableName) {
+  tableName = newTableName;
+}
+
 async function getServiceList() {
-  const result = await documentClient
-    .scan({ TableName: 'GDXDomeDynamoDB' })
-    .promise();
+  const result = await documentClient.scan({ TableName: tableName }).promise();
   return result;
 }
 
@@ -25,7 +29,7 @@ async function getService(providerId, objectType) {
   const value = await documentClient
     .get(
       {
-        TableName: 'GDXDomeDynamoDB',
+        TableName: tableName,
         Key: {
           provider: providerId,
           object: objectType
@@ -46,24 +50,25 @@ async function getService(providerId, objectType) {
 }
 
 async function saveService(service) {
+  console.log('store.saveService');
   console.log(service);
   const result = await documentClient
     .put({
-      TableName: 'GDXDomeDynamoDB',
+      TableName: tableName,
       Item: service
     })
     .promise();
   return result;
 }
 
-async function removeService(providerId) {
+async function removeService(providerId, objectType) {
   console.log(providerId);
   const result = await documentClient
     .delete({
-      TableName: 'GDXDomeDynamoDB',
+      TableName: tableName,
       Key: {
         provider: providerId,
-        object: 'ENDPOINT'
+        object: objectType
       }
     })
     .promise();
@@ -71,6 +76,7 @@ async function removeService(providerId) {
 }
 
 module.exports = {
+  setTargetTable,
   getServiceList,
   getService,
   saveService,

@@ -16,16 +16,18 @@ app.get('/services', (req, res) => {
     console.log('/services');
     store.getServiceList().then(
       value => {
-        const services =
+        res.json(
           value.Items && value.Items.length > 0
-            ? value.Items.map(item => {
-                return {
-                  providerId: item.provider,
-                  objectType: item.object
-                };
-              })
-            : [];
-        res.json(services);
+            ? value.Items.filter(item => item.object === 'ENDPOINT').map(
+                item => {
+                  return {
+                    providerId: item.provider,
+                    objectType: item.object
+                  };
+                }
+              )
+            : []
+        );
       },
       reason => {
         res.json(reason);
@@ -39,11 +41,10 @@ app.get('/services', (req, res) => {
 app.get('/services/:provider_id', (req, res) => {
   (async () => {
     const id = req.params.provider_id;
-    const objectType = 'ENDPOINT';
     console.log(id);
-    store.getService(id, objectType).then(
+    store.getService(id, 'ENDPOINT').then(
       value => {
-        res.json(value);
+        res.json(value.Item);
       },
       reason => {
         res.json(reason);
@@ -93,9 +94,25 @@ app.put('/services/:provider_id', (req, res) => {
 app.delete('/services/:provider_id', (req, res) => {
   (async () => {
     const id = req.params.provider_id;
-    store.removeService(id).then(
+    store.removeService(id, 'ENDPOINT').then(
       value => {
         res.json(value);
+      },
+      reason => {
+        res.json(reason);
+      }
+    );
+  })().catch(reason => {
+    res.json(reason);
+  });
+});
+
+app.get('/container-images/:provider_id', (req, res) => {
+  (async () => {
+    const id = req.params.provider_id;
+    store.getService(id, 'CONTAINER-IMAGES').then(
+      value => {
+        res.json(value.Item.images);
       },
       reason => {
         res.json(reason);

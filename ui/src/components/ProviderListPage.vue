@@ -94,6 +94,20 @@ export default {
     deleteProvider(providerId) {
       // eslint-disable-next-line
       console.log("deleteProvider: " + providerId);
+      const baseurl = this.$store.getters.baseUrl;
+      axios
+        .delete(baseurl + "/services/" + providerId)
+        .then(res => {
+          this.message = providerId + "を削除しました。";
+          this.snackbar = true;
+          this.checkout();
+        })
+        .catch(err => {
+          // eslint-disable-next-line
+          console.error(err);
+          this.message = "プロバイダの削除に失敗しました";
+          this.snackbar = true;
+        });
     }
   },
   created() {
