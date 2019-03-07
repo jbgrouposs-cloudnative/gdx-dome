@@ -97,7 +97,7 @@ export default {
       const baseurl = this.$store.getters.baseUrl;
       axios
         .delete(baseurl + "/services/" + providerId)
-        .then(res => {
+        .then(() => {
           this.message = providerId + "を削除しました。";
           this.snackbar = true;
           this.checkout();

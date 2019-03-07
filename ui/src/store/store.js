@@ -9,7 +9,7 @@ const state = {
     title: '',
     hasParentPage: false
   },
-  baseUrl: 'http://localhost:3000',
+  baseUrl: process.env.VUE_APP_SERVER_URI,
   user: {
     userId: 'wahhoier'
   }

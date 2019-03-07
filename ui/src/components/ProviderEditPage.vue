@@ -23,6 +23,7 @@
               outline
               required
               maxlength="30"
+              color="accent"
             ></v-text-field>
           </v-layout>
           <v-layout row align-center>
@@ -63,6 +64,7 @@
               outline
               required
               maxlength="30"
+              color="accent"
             ></v-text-field>
           </v-layout>
           <v-layout row align-center>
@@ -72,59 +74,75 @@
               v-model="currentProvider.container_info.image"
               label="コンテナイメージ"
               outline
+              color="accent"
             ></v-select>
           </v-layout>
+          <v-layout row align-center>
+            <v-text-field v-model="portModel" label="公開ポート" outline color="accent"></v-text-field>
+          </v-layout>
           <v-layout row align-center justify-space-between>
-            <v-flex xs3>
-              <v-text-field v-model="portModel" label="ポート" outline></v-text-field>
-            </v-flex>
-            <v-flex xs3>
+            <v-flex xs5>
               <v-text-field
                 v-model="currentProvider.container_info.cpu"
                 label="CPU"
                 outline
                 hint="例：500m"
+                color="accent"
               ></v-text-field>
             </v-flex>
-            <v-flex xs3>
+            <v-flex xs5>
               <v-text-field
                 v-model="currentProvider.container_info.memory"
                 label="メモリ"
                 outline
                 hint="例：1Gi"
+                color="accent"
+              ></v-text-field>
+            </v-flex>
+          </v-layout>
+          <v-layout row align-center justify-space-between>
+            <v-flex xs5>
+              <v-text-field
+                v-model="currentProvider.container_info.scale.min"
+                label="最小"
+                outline
+                color="accent"
+                suffix="コンテナ"
+              ></v-text-field>
+            </v-flex>
+            <v-flex xs5>
+              <v-text-field
+                v-model="currentProvider.container_info.scale.max"
+                label="最大"
+                outline
+                color="accent"
+                suffix="コンテナ"
               ></v-text-field>
             </v-flex>
           </v-layout>
           <v-layout row align-center justify-space-between></v-layout>
           <h3>アプリケーションの環境変数</h3>
           <v-divider></v-divider>
-          <v-btn
-            icon
-            block
-            @click="currentProvider.container_info.environments.push({name: '', value: ''})"
-          >
-            <v-icon>add</v-icon>
-          </v-btn>
-          <v-layout
-            row
-            align-center
-            v-for="(env, index) in currentProvider.container_info.environments"
-            :key="index"
-          >
-            <v-flex xs5>
-              <v-text-field v-model="env.name" label="変数名" required :rules="envNameRules" outline></v-text-field>
-            </v-flex>
-            <v-flex>：</v-flex>
-            <v-flex xs5>
-              <v-text-field v-model="env.value" label="値" required :rules="envValueRules" outline></v-text-field>
-            </v-flex>
-            <v-flex></v-flex>
-            <v-flex>
-              <v-btn icon @click="removeEnvByIndex(index)">
-                <v-icon>delete</v-icon>
-              </v-btn>
-            </v-flex>
+          <v-layout row justify-center>
+            <v-btn color="primary" @click="openEnvDialog(-1)">環境変数を追加</v-btn>
           </v-layout>
+          <v-list two-line>
+            <v-list-tile
+              v-for="(env, index) in currentProvider.container_info.environments"
+              :key="index"
+              @click.stop="openEnvDialog(index)"
+            >
+              <v-list-tile-content>
+                <v-list-tile-title>{{env.name}}</v-list-tile-title>
+                <v-list-tile-sub-title>{{env.value}}</v-list-tile-sub-title>
+              </v-list-tile-content>
+              <v-list-tile-action>
+                <v-btn icon @click.stop="removeEnvByIndex(index)">
+                  <v-icon>delete</v-icon>
+                </v-btn>
+              </v-list-tile-action>
+            </v-list-tile>
+          </v-list>
         </v-form>
       </v-flex>
     </v-layout>
@@ -141,6 +159,37 @@
       <v-icon>done</v-icon>
     </v-btn>
     <v-snackbar v-model="snackbar" :color="snackbarColor">{{message}}</v-snackbar>
+    <v-dialog v-model="envDialog" persistent max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="headline">環境変数の設定</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-form ref="form" v-model="validEnvDialog" lazy-validation>
+              <v-layout row>
+                <v-text-field
+                  v-model="envName"
+                  label="変数名"
+                  required
+                  :rules="envNameRules"
+                  outline
+                  color="accent"
+                ></v-text-field>
+              </v-layout>
+              <v-layout row>
+                <v-text-field v-model="envValue" label="値" outline color="accent"></v-text-field>
+              </v-layout>
+            </v-form>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn flat @click="envDialog = false">キャンセル</v-btn>
+          <v-btn flat color="primary" @click="saveEnvDialog()" :disabled="!validEnvDialog">保存する</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 <script>
@@ -161,7 +210,6 @@ export default {
         v => !!v || "入力必須項目です！",
         v => !this.isDuplicatedName(v) || "名前が重複しています！"
       ],
-      envValueRules: [v => !!v || "入力必須項目です！"],
       portModel: "80",
       currentProvider: {
         name: "new-provider",
@@ -175,9 +223,13 @@ export default {
           name: "",
           namespace: "wahhoi-test" + Date.now(), // TODO: const?
           image: "",
-          port: 80,
+          port: 8080,
           cpu: "500m",
           memory: "1Gi",
+          scale: {
+            min: 1,
+            max: 5
+          },
           environments: [
             {
               name: "SPRING_DATASOURCE_URL",
@@ -195,6 +247,11 @@ export default {
       },
       versionList: [1],
       imageList: [],
+      envDialog: false,
+      envName: "",
+      envValue: "",
+      envIndex: -1,
+      validEnvDialog: false,
       isLoading: true,
       isImageListLoading: false,
       isSaving: false,
@@ -204,6 +261,31 @@ export default {
     };
   },
   methods: {
+    openEnvDialog(index) {
+      this.envIndex = index;
+      if (index >= 0) {
+        const env = this.currentProvider.container_info.environments[index];
+        this.envName = env.name;
+        this.envValue = env.value;
+      } else {
+        this.envName = "";
+        this.envValue = "";
+      }
+      this.envDialog = true;
+    },
+    saveEnvDialog() {
+      const index = this.envIndex;
+      const newEnv = {
+        name: this.envName,
+        value: this.envValue
+      };
+      if (index >= 0) {
+        this.currentProvider.container_info.environments[index] = newEnv;
+      } else {
+        this.currentProvider.container_info.environments.push(newEnv);
+      }
+      this.envDialog = false;
+    },
     save() {
       this.isSaving = true;
       const baseurl = this.$store.getters.baseUrl;
@@ -356,3 +438,5 @@ export default {
   }
 };
 </script>
+<style>
+</style>

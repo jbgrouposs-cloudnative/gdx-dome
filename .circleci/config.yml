@@ -1,0 +1,60 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2
+jobs:
+  build-api:
+    docker:
+      # specify the version you desire here
+      - image: circleci/debian:stretch
+
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install \
+              python-pip
+            sudo pip install \
+              awscli
+      - run:
+          name: docker build
+          command: docker build -t ${ECR_ENDPOINT}/gdx-dome-api:${CIRCLE_SHA1} .
+          working_directory: api
+      - deploy:
+          name: Push application Docker image
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              $(aws ecr get-login --no-include-email --region us-west-2)
+              docker push "${ECR_ENDPOINT}/gdx-dome-api:${CIRCLE_SHA1}"
+            fi
+  build-ui:
+    docker:
+      # specify the version you desire here
+      - image: circleci/debian:stretch
+
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install \
+              python-pip
+            sudo pip install \
+              awscli
+      - run:
+          name: docker build
+          command: docker build -t ${ECR_ENDPOINT}/gdx-dome-ui:${CIRCLE_SHA1} .
+          working_directory: ui
+      - deploy:
+          name: Push application Docker image
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              $(aws ecr get-login --no-include-email --region us-west-2)
+              docker push "${ECR_ENDPOINT}/gdx-dome-ui:${CIRCLE_SHA1}"
+            fi
