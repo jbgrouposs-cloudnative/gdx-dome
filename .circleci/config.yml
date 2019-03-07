@@ -16,7 +16,7 @@ jobs:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install python-pip
+            apt-get install python-pip -y
             pip install awscli
       - run:
           name: docker build
@@ -41,7 +41,7 @@ jobs:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install python-pip
+            apt-get install python-pip -y
             pip install awscli
       - run:
           name: docker build
