@@ -7,7 +7,7 @@ ENV VUE_APP_SERVER_URI=wahfoo
 
 COPY ./package.json .
 COPY ./package-lock.json .
-COPY ./babel.config.json .
+COPY ./babel.config.js .
 COPY ./src ./src
 COPY ./public ./public
 
