@@ -7,7 +7,7 @@ jobs:
   build-api:
     docker:
       # specify the version you desire here
-      - image: circleci/debian:stretch
+      - image: debian:stretch
 
     steps:
       - checkout
@@ -34,7 +34,7 @@ jobs:
   build-ui:
     docker:
       # specify the version you desire here
-      - image: circleci/debian:stretch
+      - image: debian:stretch
 
     steps:
       - checkout
