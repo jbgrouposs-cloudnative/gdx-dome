@@ -15,11 +15,9 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            sudo apt-get update
-            sudo apt-get install \
-              python-pip
-            sudo pip install \
-              awscli
+            apt-get update
+            apt-get install python-pip
+            pip install awscli
       - run:
           name: docker build
           command: docker build -t ${ECR_ENDPOINT}/gdx-dome-api:${CIRCLE_SHA1} .
@@ -42,11 +40,9 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            sudo apt-get update
-            sudo apt-get install \
-              python-pip
-            sudo pip install \
-              awscli
+            apt-get update
+            apt-get install python-pip
+            pip install awscli
       - run:
           name: docker build
           command: docker build -t ${ECR_ENDPOINT}/gdx-dome-ui:${CIRCLE_SHA1} .
