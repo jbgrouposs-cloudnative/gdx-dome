@@ -58,6 +58,17 @@
           <v-divider></v-divider>
           <v-layout row>
             <v-text-field
+              v-model="currentProvider.container_info.namespace"
+              :counter="30"
+              label="コンテナグループ名"
+              outline
+              required
+              maxlength="30"
+              color="accent"
+            ></v-text-field>
+          </v-layout>
+          <v-layout row>
+            <v-text-field
               v-model="currentProvider.container_info.name"
               :counter="30"
               label="コンテナ名"
@@ -220,8 +231,8 @@ export default {
         // updatedTimestamp: null,
         tags: ["タグ１"],
         container_info: {
+          namespace: "",
           name: "",
-          namespace: "wahhoi-test" + Date.now(), // TODO: const?
           image: "",
           port: 8080,
           cpu: "500m",
@@ -345,7 +356,7 @@ export default {
           );
       }
     },
-    isDuplicatedKey(name) {
+    isDuplicatedName(name) {
       let count = 0;
       this.currentProvider.container_info.environments.forEach(env => {
         if (env.name === name) {

@@ -1,7 +1,7 @@
 FROM node:10
 LABEL maintainer="J34365"
 
-ARG NPM_PROXY
+ARG NPM_PROXY=
 
 ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
 ENV PATH=$PATH:/home/node/.npm-global/bin
