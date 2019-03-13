@@ -45,7 +45,9 @@ jobs:
             sudo pip install awscli
       - run:
           name: Build Vue application
-          command: npm run build
+          command: |
+            npm install
+            npm run build
           working_directory: ui
       - deploy:
           name: Upload
