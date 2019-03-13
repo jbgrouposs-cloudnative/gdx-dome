@@ -44,16 +44,16 @@ jobs:
             sudo apt-get install python-pip -y
             sudo pip install awscli
       - run:
-          name: docker build
-          command: docker build -t ${ECR_ENDPOINT}/gdx-dome-ui:${CIRCLE_SHA1} .
+          name: Build Vue application
+          command: npm run build
           working_directory: ui
       - deploy:
-          name: Push application Docker image
+          name: Upload
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              $(aws ecr get-login --no-include-email --region us-west-2)
-              docker push "${ECR_ENDPOINT}/gdx-dome-ui:${CIRCLE_SHA1}"
+              aws s3 sync ./dist/. s3://${S3_BUCKET_NAME}/ --include "*" --cache-control "max-age=3600" --delete
             fi
+          working_directory: ui
 workflows:
   version: 2
   build_and_deploy:

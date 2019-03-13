@@ -65,6 +65,7 @@
               required
               maxlength="30"
               color="accent"
+              :disabled="!isNew"
             ></v-text-field>
           </v-layout>
           <v-layout row>
@@ -76,6 +77,7 @@
               required
               maxlength="30"
               color="accent"
+              :disabled="!isNew"
             ></v-text-field>
           </v-layout>
           <v-layout row align-center>
@@ -89,7 +91,7 @@
             ></v-select>
           </v-layout>
           <v-layout row align-center>
-            <v-text-field v-model="portModel" label="公開ポート" outline color="accent"></v-text-field>
+            <v-text-field v-model="portModel" label="ポート番号" outline color="accent"></v-text-field>
           </v-layout>
           <v-layout row align-center justify-space-between>
             <v-flex xs5>
@@ -131,7 +133,6 @@
               ></v-text-field>
             </v-flex>
           </v-layout>
-          <v-layout row align-center justify-space-between></v-layout>
           <h3>アプリケーションの環境変数</h3>
           <v-divider></v-divider>
           <v-layout row justify-center>
@@ -154,6 +155,17 @@
               </v-list-tile-action>
             </v-list-tile>
           </v-list>
+          <h3>サンプルAPI</h3>
+          <v-divider></v-divider>
+          <v-layout row align-center justify-space-between>
+            <v-text-field
+              v-model="currentProvider.container_info.testApiResource"
+              label="API リソースパス"
+              outline
+              color="accent"
+              hint="GET できるリソースを指定します。例：/v1/wahhoi"
+            ></v-text-field>
+          </v-layout>
         </v-form>
       </v-flex>
     </v-layout>
@@ -252,7 +264,8 @@ export default {
               name: "SPRING_DATASOURCE_DRIVERCLASSNAME",
               value: "com.mysql.jdbc.Driver"
             }
-          ]
+          ],
+          testApiResource: "/"
         }
         // repositoryUrl: "https://github.com/jbgrouposs-cloudnative/gdx-dome"
       },
@@ -449,5 +462,8 @@ export default {
   }
 };
 </script>
-<style>
+<style scoped>
+h3 {
+  padding: 16px 0px;
+}
 </style>

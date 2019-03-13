@@ -3,7 +3,6 @@ import Vuetify from 'vuetify';
 import VueRouter from 'vue-router';
 import App from './App.vue';
 import ProviderListPage from './components/ProviderListPage.vue';
-import ProviderPage from './components/ProviderPage.vue';
 import ProviderEditPage from './components/ProviderEditPage.vue';
 
 import 'vuetify/dist/vuetify.min.css';
@@ -18,11 +17,6 @@ Vue.use(VueRouter);
 const router = new VueRouter({
   routes: [
     { path: '/summary', component: ProviderListPage },
-    {
-      path: '/details/:id',
-      component: ProviderPage,
-      props: true
-    },
     { path: '/edit/:id', component: ProviderEditPage },
     { path: '/*', redirect: '/summary' }
   ]

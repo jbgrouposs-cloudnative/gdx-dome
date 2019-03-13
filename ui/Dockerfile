@@ -7,6 +7,8 @@ WORKDIR /tmp/build
 
 ENV VUE_APP_SERVER_URI=http://localhost:50050
 
+COPY ./.env.production .
+COPY ./vue.config.js .
 COPY ./package.json .
 COPY ./package-lock.json .
 COPY ./babel.config.js .
